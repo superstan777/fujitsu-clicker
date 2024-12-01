@@ -194,10 +194,12 @@ const axios = require("axios");
 const cors = require("cors");
 const schedule = require("node-schedule");
 require("dotenv").config();
+const nodemailer = require("nodemailer");
 
 const app = express();
 
 app.use(cors());
+const PORT = 2137;
 
 let eventId = null;
 let startingDate;
@@ -208,9 +210,37 @@ const timesheetUrl = process.env.TIMESHEET_URL;
 const stopUrl = process.env.STOP_URL;
 const startUrl = process.env.START_URL;
 
-const PORT = 2137;
+//
 
-// returns info if user is active
+// Create a transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.PASSWORD,
+  },
+});
+
+// Send mail function
+const sendMail = async (to, subject, text) => {
+  try {
+    const info = await transporter.sendMail({
+      from: '"Fujitsu-Clicker" <your-email@gmail.com>', // Sender address
+      to: to, // Receiver's email
+      subject: subject, // Subject line
+      text: text, // Plain text body
+      // You can also add an HTML body: html: "<b>Hello, world!</b>"
+    });
+
+    console.log("Email sent: %s", info.messageId);
+  } catch (error) {
+    console.error("Error sending email: ", error);
+  }
+};
+
+// Example usage
+
+//
 const getLocations = async () => {
   try {
     const response = await axios(
@@ -345,6 +375,11 @@ const runSchedule = async () => {
     );
 
     console.log(`Next "start" log scheduled at: ${startLogTime}`);
+    sendMail(
+      "viir4d@gmail.com",
+      "Test Email",
+      `Next "start" log scheduled at: ${startLogTime}`
+    );
 
     const startJob = schedule.scheduleJob(startLogTime, async () => {
       console.log("start");
