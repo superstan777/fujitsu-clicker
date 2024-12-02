@@ -382,6 +382,7 @@ const runSchedule = async () => {
     );
 
     const startJob = schedule.scheduleJob(startLogTime, async () => {
+      sendMail("viir4d@gmail.com", "Job started", "Job started");
       console.log("start");
 
       const locationsResponse = await getLocations();
@@ -393,6 +394,7 @@ const runSchedule = async () => {
 
         console.log(`"end" log scheduled at: ${endLogTime}`);
         schedule.scheduleJob(endLogTime, () => {
+          sendMail("viir4d@gmail.com", "Job ended", "Job ended");
           console.log("end");
           eventId === null;
         });
