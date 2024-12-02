@@ -386,8 +386,10 @@ const runSchedule = async () => {
       console.log("start");
 
       const locationsResponse = await getLocations();
-      if (locationsResponse) {
-        const approvedStartingDate = new Date(locationsResponse.startingTime);
+      if (locationsResponse.activeTimesheet) {
+        const approvedStartingDate = new Date(
+          locationsResponse.activeTimesheet.start
+        );
         const endLogTime = new Date(
           approvedStartingDate.getTime() + 8 * 60 * 60 * 1000
         );
