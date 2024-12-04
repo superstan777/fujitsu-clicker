@@ -31,11 +31,11 @@ const transporter = nodemailer.createTransport({
 });
 
 // Send mail function
-const sendMail = async (to, subject, text) => {
+const sendMail = async (subject, text) => {
   try {
     const info = await transporter.sendMail({
       from: '"Fujitsu-Clicker" <your-email@gmail.com>', // Sender address
-      to: to, // Receiver's email
+      to: "viir4d@gmail.com", // Receiver's email
       subject: subject, // Subject line
       text: text, // Plain text body
       // You can also add an HTML body: html: "<b>Hello, world!</b>"
@@ -63,7 +63,6 @@ const getLocations = async () => {
       }
     );
 
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching locations:", error);
@@ -85,7 +84,6 @@ const getTimesheet = async () => {
     );
 
     // console.log(response.data[0].events[0]);
-    console.log(response.data[0].events[0]);
     return response.data[0].events[0];
   } catch (error) {
     console.error("Error fetching timesheet:", error);
@@ -112,8 +110,7 @@ const startWorking = async () => {
       }
     );
 
-    // handle response
-    console.log(response.data.events);
+    // console.log(response.data.events);
     return response;
   } catch (error) {
     console.error("Start working error:", error);
@@ -195,7 +192,6 @@ const runSchedule = async () => {
     console.log(`"end" log scheduled at: ${endLogTime}`);
     schedule.scheduleJob(endLogTime, () => {
       sendMail(
-        "viir4d@gmail.com",
         `Job ended at: ${startLogTime}`,
         `Job ended at: ${startLogTime}`
       );
@@ -220,8 +216,9 @@ const runSchedule = async () => {
 
   const timesheet = await getTimesheet();
   const now = new Date();
+  const timesheetDate = new Date(timesheet.start);
 
-  if (now.getTime() > timesheet.start.getTime()) {
+  if (now.getTime() > timesheetDate.getTime()) {
     const nextLogDate = new Date(
       now.getFullYear(),
       now.getMonth(),
@@ -229,9 +226,8 @@ const runSchedule = async () => {
     );
 
     sendMail(
-      "viir4d@gmail.com",
-      `New timesheet will be fetched at: ${startLogTime}`,
-      `New timesheet will be fetched at: ${startLogTime}`
+      `New timesheet will be fetched at: ${nextLogDate}`,
+      `New timesheet will be fetched at: ${nextLogDate}`
     );
 
     schedule.scheduleJob(nextLogDate, () => {
@@ -257,14 +253,12 @@ const runSchedule = async () => {
       console.log(`Start scheduled at: ${startLogTime}`);
 
       sendMail(
-        "viir4d@gmail.com",
         `Start log scheduled at: ${startLogTime}`,
         `Start log scheduled at: ${startLogTime}`
       );
 
       const startJob = schedule.scheduleJob(startLogTime, async () => {
         sendMail(
-          "viir4d@gmail.com",
           `Job started at: ${startLogTime}`,
           `Job started at: ${startLogTime}`
         );
@@ -284,7 +278,6 @@ const runSchedule = async () => {
           console.log(`End log scheduled at: ${endLogTime}`);
           schedule.scheduleJob(endLogTime, () => {
             sendMail(
-              "viir4d@gmail.com",
               `Job ended at: ${endLogTime}`,
               `Job ended at: ${endLogTime}`
             );
@@ -300,7 +293,6 @@ const runSchedule = async () => {
           );
 
           sendMail(
-            "viir4d@gmail.com",
             `New timesheet will be fetched at: ${startLogTime}`,
             `New timesheet will be fetched at: ${startLogTime}`
           );
