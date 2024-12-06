@@ -8,6 +8,7 @@ const nodemailer = require("nodemailer");
 const app = express();
 
 app.use(cors());
+
 const PORT = 2137;
 
 let eventId = null;
@@ -47,9 +48,6 @@ const sendMail = async (subject, text) => {
   }
 };
 
-// Example usage
-
-//
 const getLocations = async () => {
   try {
     const response = await axios(
@@ -69,7 +67,6 @@ const getLocations = async () => {
   }
 };
 
-// returns starting date and eventId
 const getTimesheet = async () => {
   try {
     const response = await axios.post(
@@ -83,7 +80,6 @@ const getTimesheet = async () => {
       }
     );
 
-    // console.log(response.data[0].events[0]);
     return response.data[0].events[0];
   } catch (error) {
     console.error("Error fetching timesheet:", error);
@@ -110,7 +106,6 @@ const startWorking = async () => {
       }
     );
 
-    // console.log(response.data.events);
     return response;
   } catch (error) {
     console.error("Start working error:", error);
@@ -130,7 +125,6 @@ const stopWorking = async () => {
       }
     );
 
-    console.log(response.data);
     eventId = null;
     return response;
   } catch (error) {
@@ -183,13 +177,15 @@ const runSchedule = async () => {
 
   if (locationsResponse.activeTimesheet) {
     const approvedStartingDate = new Date(
-      locationsResponse.activeTimesheet.start
+      locationsResponse.activeTimesheet.start.concat("Z")
     );
+
     const endLogTime = new Date(
       approvedStartingDate.getTime() + getRandomTimeOffset()
     );
 
     console.log(`"end" log scheduled at: ${endLogTime}`);
+
     schedule.scheduleJob(endLogTime, () => {
       sendMail(
         `Job ended at: ${startLogTime}`,
@@ -229,6 +225,7 @@ const runSchedule = async () => {
       `New timesheet will be fetched at: ${nextLogDate}`,
       `New timesheet will be fetched at: ${nextLogDate}`
     );
+    // send mails at 01:00 instead of 00:00
 
     schedule.scheduleJob(nextLogDate, () => {
       runSchedule();
@@ -257,6 +254,8 @@ const runSchedule = async () => {
         `Start log scheduled at: ${startLogTime}`
       );
 
+      //send mails 1 hour later
+
       const startJob = schedule.scheduleJob(startLogTime, async () => {
         sendMail(
           `Job started at: ${startLogTime}`,
@@ -269,13 +268,14 @@ const runSchedule = async () => {
 
         if (locationsResponse.activeTimesheet) {
           const approvedStartingDate = new Date(
-            locationsResponse.activeTimesheet.start
+            locationsResponse.activeTimesheet.start.concat("Z")
           );
           const endLogTime = new Date(
             approvedStartingDate.getTime() + getRandomTimeOffset()
           );
 
           console.log(`End log scheduled at: ${endLogTime}`);
+
           schedule.scheduleJob(endLogTime, () => {
             sendMail(
               `Job ended at: ${endLogTime}`,
