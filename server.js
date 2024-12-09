@@ -266,6 +266,9 @@ const runSchedule = async () => {
 
         const locationsResponse = await getLocations();
 
+        console.log("check active timesheet");
+        console.log(locationsResponse);
+
         if (locationsResponse.activeTimesheet) {
           const approvedStartingDate = new Date(
             locationsResponse.activeTimesheet.start.concat("Z")
@@ -275,6 +278,10 @@ const runSchedule = async () => {
           );
 
           console.log(`End log scheduled at: ${endLogTime}`);
+          sendMail(
+            `End log scheduled at: ${endLogTime}`,
+            `End log scheduled at: ${endLogTime}`
+          );
 
           schedule.scheduleJob(endLogTime, () => {
             sendMail(
@@ -300,6 +307,12 @@ const runSchedule = async () => {
           schedule.scheduleJob(nextLogDate, () => {
             runSchedule();
           });
+        } else {
+          console.log(`Error fetching active timesheet`);
+          sendMail(
+            `Error fetching active timesheet`,
+            `Error fetching active timesheet`
+          );
         }
       });
     }
