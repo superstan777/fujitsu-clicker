@@ -27,9 +27,10 @@ const runSchedule = async () => {
 
   // if active end, next, return
   const locationsResponse = await getLocations();
+  console.log(locationsResponse);
 
   if (locationsResponse.activeTimesheet) {
-    console.log(" if active end, next, return    ");
+    console.log(" if active end, next, return");
     const approvedStartingDate = new Date(
       locationsResponse.activeTimesheet.start.concat("Z")
     );
@@ -123,12 +124,12 @@ const runSchedule = async () => {
         const startResponse = await startWorking();
 
         if (startResponse === 200) {
-          sendJobStartEmail(approvedStartingDate);
+          sendJobStartEmail(startLogTime);
         } else {
           sendErrorNotification();
         }
 
-        console.log(`Job star requested at: ${startLogTime}`);
+        console.log(`Job start requested at: ${startLogTime}`);
 
         const locationsResponse = await getLocations();
 
