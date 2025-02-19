@@ -1,12 +1,37 @@
 const axios = require("axios");
 const { getEventId, setEventId } = require("../utils/eventIdManager");
 
-const getLocations = async () => {
+const authenticate = async () => {
+  try {
+    const response = await axios.post(
+      process.env.AUTH_URL,
+      {
+        username: process.env.FUJITSU_USER,
+        password: process.env.FUJITSU_PASSWORD,
+        mfaToken: "",
+        trustBrowserForMfa: false,
+      },
+      {
+        headers: {
+          referrer: "https://gpmo.ts.fujitsu.com/",
+        },
+      }
+    );
+
+    const authToken = `Bearer ${response.data.token}`;
+
+    return authToken;
+  } catch (error) {
+    console.error("Authentication error:", error);
+  }
+};
+
+const getLocations = async (authToken) => {
   try {
     const response = await axios(process.env.LOCATIONS_URL, {
       headers: {
         referrer: "https://gpmo.ts.fujitsu.com/",
-        authorization: process.env.AUTH,
+        authorization: authToken,
       },
     });
 
@@ -16,7 +41,7 @@ const getLocations = async () => {
   }
 };
 
-const getTimesheet = async () => {
+const getTimesheet = async (authToken) => {
   try {
     const response = await axios.post(
       process.env.TIMESHEET_URL,
@@ -24,7 +49,7 @@ const getTimesheet = async () => {
       {
         headers: {
           referrer: "https://gpmo.ts.fujitsu.com/",
-          authorization: process.env.AUTH,
+          authorization: authToken,
         },
       }
     );
@@ -36,7 +61,7 @@ const getTimesheet = async () => {
   }
 };
 
-const startWorking = async () => {
+const startWorking = async (authToken) => {
   try {
     const response = await axios.post(
       process.env.START_URL,
@@ -51,7 +76,7 @@ const startWorking = async () => {
       {
         headers: {
           referrer: "https://gpmo.ts.fujitsu.com/",
-          authorization: process.env.AUTH,
+          authorization: authToken,
         },
       }
     );
@@ -62,7 +87,7 @@ const startWorking = async () => {
   }
 };
 
-const stopWorking = async () => {
+const stopWorking = async (authToken) => {
   try {
     const response = await axios.post(
       process.env.STOP_URL,
@@ -70,7 +95,7 @@ const stopWorking = async () => {
       {
         headers: {
           referrer: "https://gpmo.ts.fujitsu.com/",
-          authorization: process.env.AUTH,
+          authorization: authToken,
         },
       }
     );
@@ -83,7 +108,7 @@ const stopWorking = async () => {
   }
 };
 
-const isDayOff = async () => {
+const isDayOff = async (authToken) => {
   const today = new Date();
   const todayISOString = today.toISOString();
 
@@ -97,7 +122,7 @@ const isDayOff = async () => {
       {
         headers: {
           referrer: "https://gpmo.ts.fujitsu.com/",
-          authorization: process.env.AUTH,
+          authorization: authToken,
         },
       }
     );
@@ -109,6 +134,7 @@ const isDayOff = async () => {
 };
 
 module.exports = {
+  authenticate,
   getLocations,
   getTimesheet,
   startWorking,

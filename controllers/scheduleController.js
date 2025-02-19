@@ -1,5 +1,6 @@
 const schedule = require("node-schedule");
 const {
+  authenticate,
   getTimesheet,
   getLocations,
   startWorking,
@@ -23,11 +24,11 @@ const {
 const { getEventId, setEventId } = require("../utils/eventIdManager");
 
 const runSchedule = async () => {
-  // ends job properly - error mail instead of end job mail
+  const authToken = await authenticate();
 
-  // if active end, next, return
-  const locationsResponse = await getLocations();
-  console.log(locationsResponse);
+  const locationsResponse = await getLocations(authToken);
+
+  // if active -> end, next, re-run
 
   if (locationsResponse.activeTimesheet) {
     console.log(" if active end, next, return");
@@ -42,12 +43,12 @@ const runSchedule = async () => {
     console.log(`"end" log scheduled at: ${endLogTime}`);
 
     schedule.scheduleJob(endLogTime, async () => {
-      const endResponse = await stopWorking();
+      const endResponse = await stopWorking(authToken);
 
       if (endResponse === 200) {
         sendJobEndEmail(endLogTime);
       } else {
-        sendErrorNotification();
+        sendErrorNotification(); // change to endJobError
       }
 
       console.log(`Job ended at: ${endLogTime}`);
@@ -69,19 +70,14 @@ const runSchedule = async () => {
     return;
   }
 
-  const timesheet = await getTimesheet();
+  const timesheet = await getTimesheet(authToken);
   const now = new Date();
   const jobStartDate = new Date(timesheet.latestStart);
+  const dayOff = await isDayOff(authToken);
 
-  const dayOff = await isDayOff();
+  // if not active and time > latest start or day is off based on planning -> next, re-run
 
-  // if not active and time > end or day is off based on planning - next, return
-
-  if (now.getTime() > jobStartDate.getTime() || dayOff) {
-    console.log(
-      " if not active and time > end or day is off based on planning - next, return"
-    );
-
+  if (dayOff || now.getTime() > jobStartDate.getTime()) {
     const nextTimesheetDate = new Date(
       now.getFullYear(),
       now.getMonth(),
@@ -95,11 +91,8 @@ const runSchedule = async () => {
     });
   }
 
-  // if not active and time < latest start - start, end, next, return
+  // if not active and time < latest start -> start, end, next, re-run
   else {
-    console.log(
-      "  if not active and time < latest start - start, end, next, return    "
-    );
     const { hours, minutes, seconds } = getRandomTime();
 
     setEventId(timesheet.id);
@@ -121,17 +114,17 @@ const runSchedule = async () => {
       sendNextStartLogNotification(startLogTime);
 
       schedule.scheduleJob(startLogTime, async () => {
-        const startResponse = await startWorking();
+        const startResponse = await startWorking(authToken);
 
         if (startResponse === 200) {
           sendJobStartEmail(startLogTime);
         } else {
-          sendErrorNotification();
+          sendErrorNotification(); // change to startJobError
         }
 
         console.log(`Job start requested at: ${startLogTime}`);
 
-        const locationsResponse = await getLocations();
+        const locationsResponse = await getLocations(authToken);
 
         if (locationsResponse.activeTimesheet) {
           const approvedStartingDate = new Date(
@@ -144,15 +137,15 @@ const runSchedule = async () => {
 
           console.log(`End log scheduled at: ${endLogTime}`);
 
-          sendNextEndLogNotification(endLogTime);
+          sendNextEndLogNotification(endLogTime); // wysyla
 
           schedule.scheduleJob(endLogTime, async () => {
-            const endResponse = await stopWorking();
+            const endResponse = await stopWorking(authToken);
 
             if (endResponse === 200) {
               sendJobEndEmail(endLogTime);
             } else {
-              sendErrorNotification();
+              sendErrorNotification(); // change to endJobError
             }
 
             console.log(`Job ended at: ${endLogTime}`);
