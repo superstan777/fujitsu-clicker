@@ -1,32 +1,26 @@
 const { sendMail } = require("../utils/mailer");
 
-const sendJobStartEmail = async (startTime) => {
-  await sendMail("Job Started", `Job started at: ${startTime}`);
+const sendJobStartEmail = async (startingDate) => {
+  await sendMail("Job Started", `Job started at: ${startingDate}`);
 };
 
-const sendJobEndEmail = async (endTime) => {
-  await sendMail("Job Ended", `Job ended at: ${endTime}`);
+const sendJobEndEmail = async (endingDate) => {
+  await sendMail("Job Ended", `Job ended at: ${endingDate}`);
 };
 
-const sendNewTimesheetNotification = async (nextLogDate) => {
+const sendNewTimesheetNotification = async (nextTimesheetDate) => {
   await sendMail(
-    `New timesheet will be fetched at: ${nextLogDate}`,
-    `New timesheet will be fetched at: ${nextLogDate}`
+    "New Timesheet",
+    `New timesheet will be fetched at: ${nextTimesheetDate}`
   );
 };
 
-const sendNextStartLogNotification = async (startLogTime) => {
-  await sendMail(
-    `Start log scheduled at: ${startLogTime}`,
-    `Start log scheduled at: ${startLogTime}`
-  );
+const sendNextStartLogNotification = async (nextStartingDate) => {
+  await sendMail("Next start", `Start log scheduled at: ${nextStartingDate}`);
 };
 
-const sendNextEndLogNotification = async (endLogTime) => {
-  await sendMail(
-    `End log scheduled at: ${endLogTime}`,
-    `End log scheduled at: ${endLogTime}`
-  );
+const sendNextEndLogNotification = async (nextEndingDate) => {
+  await sendMail("Next end", `End log scheduled at: ${nextEndingDate}`);
 };
 
 const sendErrorNotification = async () => {
