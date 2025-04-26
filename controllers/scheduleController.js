@@ -150,18 +150,18 @@ const runSchedule = async () => {
 
             console.log(`Job ended at: ${endLogTime}`);
             setEventId(null);
-          });
 
-          const nextLogDate = new Date(
-            startLogTime.getFullYear(),
-            startLogTime.getMonth(),
-            startLogTime.getDate() + 1
-          );
+            const nextLogDate = new Date(
+              startLogTime.getFullYear(),
+              startLogTime.getMonth(),
+              startLogTime.getDate() + 1
+            );
 
-          sendNewTimesheetNotification(nextLogDate);
+            sendNewTimesheetNotification(nextLogDate);
 
-          schedule.scheduleJob(nextLogDate, () => {
-            runSchedule();
+            schedule.scheduleJob(nextLogDate, () => {
+              runSchedule();
+            });
           });
         } else {
           console.log(`Error fetching active timesheet`);
